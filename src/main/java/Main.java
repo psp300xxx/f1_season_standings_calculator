@@ -1,16 +1,14 @@
 import controller.*;
 import model.*;
+import org.apache.commons.cli.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Calendar;
 
 public class Main {
-
-    public static final int MIN_ARGS_LEN = 1;
-
-    public static final String COMMON_TARGET_DIRECTORY = "F1_TARGET";
 
     public static final int FIRST_F1_YEAR = 1950;
 
@@ -76,6 +74,7 @@ public class Main {
 
     private static void executeInput(String input, File output){
         try{
+            System.out.println(String.format("Operating on '%s', destination file='%s'", input, output.getCanonicalPath()));
             int year = parseInput(input);
             SeasonLoaderDelegateImpl newDelegate = new SeasonLoaderDelegateImpl();
             if(output!=null){
@@ -91,26 +90,47 @@ public class Main {
             System.err.println(exception.getMessage());
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
 
     }
 
     public static void main(String[] args) {
-        if(args.length<MIN_ARGS_LEN){
-            System.err.println("Usage: java -jar f1_season.jar [YEAR]");
-            System.exit(0);
+        Options options = new Options();
+
+        Option input = new Option("y", "years", true, "Years to compute");
+        input.setArgs(-2);
+        input.setRequired(true);
+        options.addOption(input);
+
+        Option output = new Option("o", "output", true, "output file");
+        output.setRequired(false);
+        options.addOption(output);
+
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd = null;
+        try {
+            cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.err.println(e.getMessage());
+            formatter.printHelp("utility-name", options);
+
+            System.exit(1);
         }
-        File newDir = new File(COMMON_TARGET_DIRECTORY);
-        if(newDir.exists() && !newDir.isDirectory()){
-            System.err.println(String.format("'%s' already exists and it is a file", COMMON_TARGET_DIRECTORY));
-            System.exit(0);
+        String commonDirectory = cmd.getOptionValue("output");
+        File commonDir = new File(commonDirectory);
+        if(!commonDir.exists()){
+            commonDir.mkdirs();
         }
-        if(!newDir.exists()){
-            newDir.mkdirs();
+        else if(commonDir.isFile()){
+            System.err.println(String.format("Directory provided (%s) exists as file", commonDirectory));
+            System.exit(1);
         }
-        for( int i =0  ; i<args.length; i++ ){
-            String currentOutputFile = COMMON_TARGET_DIRECTORY + File.separator+ String.format("./%s.txt", args[i]);
-            executeInput(args[i], new File(currentOutputFile));
+        for( String option : cmd.getOptionValues("years")){
+            String currentOutputFile = commonDirectory + File.separator + String.format("./%s.txt", option);
+            executeInput(option, new File(currentOutputFile));
         }
     }
 }
