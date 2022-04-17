@@ -10,6 +10,8 @@ public class Main {
 
     public static final int MIN_ARGS_LEN = 1;
 
+    public static final String COMMON_TARGET_DIRECTORY = "F1_TARGET";
+
     public static final int FIRST_F1_YEAR = 1950;
 
     private static Season season;
@@ -98,17 +100,16 @@ public class Main {
             System.err.println("Usage: java -jar f1_season.jar [YEAR]");
             System.exit(0);
         }
-        String commonDirectory = "f1_target";
-        File newDir = new File(commonDirectory);
+        File newDir = new File(COMMON_TARGET_DIRECTORY);
         if(newDir.exists() && !newDir.isDirectory()){
-            System.err.println(String.format("'%s' already exists and it is a file", commonDirectory));
+            System.err.println(String.format("'%s' already exists and it is a file", COMMON_TARGET_DIRECTORY));
             System.exit(0);
         }
         if(!newDir.exists()){
             newDir.mkdirs();
         }
         for( int i =0  ; i<args.length; i++ ){
-            String currentOutputFile = commonDirectory + File.separator+ String.format("./%s.txt", args[i]);
+            String currentOutputFile = COMMON_TARGET_DIRECTORY + File.separator+ String.format("./%s.txt", args[i]);
             executeInput(args[i], new File(currentOutputFile));
         }
     }
