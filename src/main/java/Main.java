@@ -90,6 +90,7 @@ public class Main {
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
+
     }
 
     public static void main(String[] args) {
@@ -97,8 +98,17 @@ public class Main {
             System.err.println("Usage: java -jar f1_season.jar [YEAR]");
             System.exit(0);
         }
+        String commonDirectory = "f1_target";
+        File newDir = new File(commonDirectory);
+        if(newDir.exists() && !newDir.isDirectory()){
+            System.err.println(String.format("'%s' already exists and it is a file", commonDirectory));
+            System.exit(0);
+        }
+        if(!newDir.exists()){
+            newDir.mkdirs();
+        }
         for( int i =0  ; i<args.length; i++ ){
-            String currentOutputFile = String.format("./%s.txt", args[i]);
+            String currentOutputFile = commonDirectory + File.separator+ String.format("./%s.txt", args[i]);
             executeInput(args[i], new File(currentOutputFile));
         }
     }
